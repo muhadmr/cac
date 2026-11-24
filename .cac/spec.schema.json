@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/holgerleichsenring/specification-first-agentic-development/spec.schema.json",
+  "title": "Specification",
+  "description": "Compact YAML spec for one unit of work. Used by AI agents to understand scope, deliverables, and completion criteria.",
+  "type": "object",
+  "required": ["spec", "goal"],
+  "additionalProperties": false,
+  "properties": {
+    "spec": {
+      "type": "string",
+      "description": "Spec identifier: a date-minted id (e.g. 2026-08-24-8a3f, series member 2026-08-24-8a3fa) or a counter id a project already carries (e.g. p42, p0042, p57a), optionally followed by -label.",
+      "pattern": "^(?:p\\d+[a-z]?|\\d{4}-\\d{2}-\\d{2}-[0-9a-f]{4}[a-z]?)(?:-[a-z][a-z0-9-]*)?$",
+      "examples": ["2026-08-24-8a3f", "2026-08-24-8a3fa", "p42", "p0042"]
+    },
+    "goal": {
+      "type": "string",
+      "description": "One line: what is being built and why",
+      "maxLength": 200
+    },
+    "applies_to": {
+      "type": "string",
+      "description": "Free-text description of which part of the project this spec touches (e.g. 'server', 'client + docs', 'all stacks'). Optional. Free-form, not an enum — operators pick their own vocabulary."
+    },
+    "scope": {
+      "type": "object",
+      "description": "What this spec changes (in) and what it deliberately leaves, with where that goes (out).",
+      "additionalProperties": false,
+      "properties": {
+        "in": { "type": "string" },
+        "out": { "type": "string" }
+      }
+    },
+    "facts": {
+      "type": ["array", "null"],
+      "description": "What the spec rests on that the author READ in the code. Each evidence names the file and lines opened, or starts with 'observed:' and a date for evidence that is not a file.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "evidence"],
+        "properties": {
+          "claim": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "assumptions": {
+      "type": ["array", "string", "null"],
+      "description": "What the spec rests on that the author did NOT open a file to confirm, with how to check it.",
+      "minLength": 1,
+      "items": {
+        "oneOf": [
+          { "type": "string", "minLength": 1 },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["claim"],
+            "properties": {
+              "claim": { "type": "string", "minLength": 1 },
+              "check": { "type": "string" }
+            }
+          }
+        ]
+      }
+    },
+    "requires": {
+      "oneOf": [
+        {
+          "type": "array",
+          "description": "Spec IDs or free-text preconditions",
+          "items": { "type": "string" }
+        },
+        {
+          "type": "string",
+          "description": "Single precondition"
+        }
+      ]
+    },
+    "decisions": {
+      "type": "array",
+      "description": "Non-obvious choices made for this spec, with reasoning",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Decision summary with reason (format: 'what — why')"
+          }
+        },
+        "required": ["key"]
+      }
+    },
+    "steps": {
+      "type": "array",
+      "description": "Implementation steps, each a named unit of work",
+      "items": {
+        "type": "object",
+        "required": ["id", "action"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Short noun identifying this step",
+            "examples": ["domain", "contracts", "config", "verify"]
+          },
+          "action": {
+            "oneOf": [
+              { "type": "string", "description": "Single imperative line" },
+              {
+                "type": "array",
+                "description": "Multiple imperative lines",
+                "items": { "type": "string" }
+              }
+            ]
+          },
+          "new": {
+            "type": "array",
+            "description": "Types/files created in this step. Format: 'TypeName: description' or 'TypeName: { Field:type, ... }'",
+            "items": { "type": "string" }
+          },
+          "modify": {
+            "type": "array",
+            "description": "Types/files modified in this step. Format: 'TypeName: what changes'",
+            "items": { "type": "string" }
+          },
+          "rename": {
+            "type": "array",
+            "description": "Types/files renamed. Format: 'OldName → NewName'",
+            "items": { "type": "string" }
+          },
+          "delete": {
+            "type": "array",
+            "description": "Types/files removed",
+            "items": { "type": "string" }
+          },
+          "path": {
+            "type": "string",
+            "description": "Project or folder hint for this step"
+          }
+        }
+      }
+    },
+    "packages": {
+      "type": "array",
+      "description": "NuGet/npm/pip packages added or updated",
+      "items": { "type": "string" }
+    },
+    "dep-graph": {
+      "type": "object",
+      "description": "Project/module dependency changes",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "pipeline-presets": {
+      "type": "object",
+      "description": "Pipeline command sequences added or modified",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "upgrade_impact": {
+      "type": "string",
+      "description": "What an operator must change when they update to a release carrying this spec. Expected: 'nothing'. Anything else is opt-in (the default stays as it was) or says why it cannot be."
+    },
+    "proven_live": {
+      "type": "string",
+      "description": "What tests prove and what only a live check can show: which live check, against what, and whether it has been done."
+    },
+    "tests": {
+      "type": "array",
+      "description": "Test method names, AAA naming convention: Method_Scenario_Expected",
+      "items": { "type": "string" }
+    },
+    "done": {
+      "type": "array",
+      "description": "Verifiable completion criteria",
+      "items": { "type": "string" }
+    }
+  }
+}

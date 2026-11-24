@@ -1,0 +1,30 @@
+{
+  "name": "cac",
+  "version": "0.1.0",
+  "description": "Audit artifacts left behind by coding agents and check MCP server availability",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "cac": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "tui": "bun run src/index.ts tui",
+    "scan": "bun run src/index.ts scan",
+    "project": "bun run src/index.ts project",
+    "clean": "bun run src/index.ts clean",
+    "skills": "bun run src/index.ts skills list",
+    "verify": "bun run src/index.ts skills verify",
+    "mcp": "bun run src/index.ts mcp",
+    "build:exe": "bun build --compile --outfile cac.exe src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/holgerleichsenring/specification-first-agentic-development/context.schema.json",
+  "title": "Context",
+  "description": "A per-stack context.yaml. The top level is open: a project keeps whatever keys it needs. Only the keys the plugin's skills read are declared.",
+  "type": "object",
+  "properties": {
+    "verify": {
+      "type": "array",
+      "description": "Commands that prove a change in this repository holds. The plugin's commit gate runs them in order from the repository root at every spec commit; deliver-spec runs them by hand only when no gate checked the commit.",
+      "items": {
+        "type": "object",
+        "required": ["label", "command"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string", "minLength": 1, "description": "What the stage is called in the report (build, test, lint)." },
+          "command": { "type": "string", "minLength": 1, "description": "Shell command, run from the repository root; a command needing another directory carries its own cd." },
+          "when_present": { "type": "string", "minLength": 1, "description": "Path relative to the repository root the command needs; absent path = the stage is skipped and reported, never failed." }
+        }
+      }
+    },
+    "gate": {
+      "type": "string",
+      "enum": ["plugin", "project", "git"],
+      "description": "Who gates a spec commit. plugin (the default when no context declares it): the plugin's PreToolUse hook runs the verify stages. project: the repository runs its own commit gate and the plugin's hook steps aside. git: the commit-msg hook that hooks/install-git-hook.py writes into each clone runs the stages, for every agent and for commits typed by hand; the plugin's hook steps aside where that hook is installed. Every teammate needs plugin 2.8.0 or later before a context declares git. Declare it in one context; two different values block every spec commit."
+    },
+    "evidence_roots": {
+      "type": "object",
+      "description": "Qualifiers a spec's evidence may use ('name:path/to/file:12'), each mapped to a path relative to the repository root. review-spec resolves a qualified citation there when the path exists, otherwise accepts it unchecked.",
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    }
+  }
+}

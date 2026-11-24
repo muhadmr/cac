@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=../../context.schema.json
+meta:
+  project: cac
+  version: 0.1.0
+  type: [cli, tui]
+  purpose: "Audit artifacts left behind by coding agents and check MCP server availability"
+  workdir: "."
+
+methodology:
+  version: "2.8.1"
+
+gate: git
+
+stack:
+  runtime: Bun
+  lang: TypeScript
+  infra: []
+  testing: [bun:test]
+  sdks: []
+
+arch:
+  style: [Modular CLI / TUI]
+  patterns: [Reducer State Machine, Pure View Rendering, Guard Clauses, Safe Filesystem Operations]
+  layers:
+    - CLI & TUI Presentation (src/index.ts, src/tui/app.ts, src/tui/view.ts)
+    - State & Reducer (src/tui/model.ts)
+    - Domain Operations (src/scanner.ts, src/cleaner.ts, src/projects.ts, src/skills.ts, src/mcp.ts)
+    - Domain Models & Types (src/types.ts)
+
+quality:
+  lang: english-only
+  limits:
+    zero-runtime-deps: true
+  principles: [GuardClauses, FailFast, PureFunctions, StrictTypes]
+  naming:
+    types: PascalCase
+    functions: camelCase
+    constants: UPPER_SNAKE_CASE
+  testing:
+    style: AAA
+    framework: bun:test
+
+verify:
+  - label: typecheck
+    command: "bun run typecheck"
+  - label: test
+    command: "bun test"
+  - label: build
+    command: "bun run build:exe"
+
+state:
+  done: {}
+  active: {}
+  planned: {}
